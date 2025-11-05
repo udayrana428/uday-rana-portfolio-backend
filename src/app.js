@@ -39,6 +39,7 @@ app.use("/api/v1/healthcheck", healthcheckRouter);
 // App Routes
 import projectRouter from "./routes/project.routes.js";
 import morganMiddleware from "./logger/morgan.logger.js";
+import connectDB from "./db/index.js";
 
 app.use("/api/v1/projects", projectRouter);
 
@@ -47,4 +48,7 @@ app.use(errorHandler);
 
 export { httpServer };
 // ✅ For Vercel / Serverless
-export default (req, res) => app(req, res);
+export default async function handler(req, res) {
+  await connectDB(); // ensure DB is connected before handling request
+  return app(req, res);
+}
