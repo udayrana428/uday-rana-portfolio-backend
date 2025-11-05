@@ -1,12 +1,23 @@
 import winston from "winston";
 import fs from "fs";
+import path from "path";
 
-// Ensure logs directory exists
-if (!fs.existsSync("logs")) {
-  fs.mkdirSync("logs");
+const env = process.env.NODE_ENV || "development";
+const isDev = env === "development";
+
+// ✅ Use writable path for dev; /tmp fallback for cloud
+const logDir = isDev ? "logs" : "/tmp/logs";
+
+// Try to create the log directory (safe for dev)
+try {
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir, { recursive: true });
+  }
+} catch {
+  console.warn("⚠️ Log directory creation skipped (read-only filesystem)");
 }
 
-// Define your severity levels.
+// Define levels
 const levels = {
   error: 0,
   warn: 1,
@@ -15,19 +26,7 @@ const levels = {
   debug: 4,
 };
 
-// This method set the current severity based on
-// the current NODE_ENV: show all the log levels
-// if the server was run in development mode; otherwise,
-// if it was run in production, show only warn and error messages.
-const level = () => {
-  const env = process.env.NODE_ENV || "development";
-  const isDevelopment = env === "development";
-  return isDevelopment ? "debug" : "warn";
-};
-
-// Define different colors for each level.
-// Colors make the log message more visible,
-// adding the ability to focus or ignore messages.
+// Color map
 const colors = {
   error: "red",
   warn: "yellow",
@@ -36,12 +35,9 @@ const colors = {
   debug: "white",
 };
 
-// Tell winston that you want to link the colors
-// defined above to the severity levels.
 winston.addColors(colors);
 
-// Chose the aspect of your log customizing the log format.
-
+// Formats
 const devFormat = winston.format.combine(
   winston.format.colorize({ all: true }),
   winston.format.timestamp({ format: "DD MMM, YYYY - HH:mm:ss:ms" }),
@@ -55,32 +51,52 @@ const prodFormat = winston.format.combine(
   winston.format.json()
 );
 
-// Define which transports the logger must use to print out messages.
-// In this example, we are using three different transports
+// Transports
 const transports = [
-  // Allow the use the console to print the messages
-  new winston.transports.Console(),
-  new winston.transports.File({ filename: "logs/error.log", level: "error" }),
-  new winston.transports.File({ filename: "logs/info.log", level: "info" }),
-  new winston.transports.File({ filename: "logs/http.log", level: "http" }),
+  new winston.transports.Console({
+    format: isDev ? devFormat : prodFormat,
+  }),
 ];
 
-// Create the logger instance that has to be exported
-// and used to log messages.
+// Only write files locally (safe)
+if (isDev) {
+  transports.push(
+    new winston.transports.File({
+      filename: path.join(logDir, "error.log"),
+      level: "error",
+    }),
+    new winston.transports.File({ filename: "logs/info.log", level: "info" }),
+    new winston.transports.File({ filename: "logs/http.log", level: "http" }),
+    new winston.transports.File({
+      filename: path.join(logDir, "combined.log"),
+    })
+  );
+}
+
+// Logger instance
 const logger = winston.createLogger({
-  level: level(),
+  level: isDev ? "debug" : "warn",
   levels,
-  format: process.env.NODE_ENV === "development" ? devFormat : prodFormat,
+  format: isDev ? devFormat : prodFormat,
   transports,
 });
 
-// Handle unhandled errors gracefully
-logger.exceptions.handle(
-  new winston.transports.File({ filename: "logs/exceptions.log" })
-);
-
-logger.rejections.handle(
-  new winston.transports.File({ filename: "logs/rejections.log" })
-);
+// Exception handling
+if (isDev) {
+  logger.exceptions.handle(
+    new winston.transports.File({
+      filename: path.join(logDir, "exceptions.log"),
+    })
+  );
+  logger.rejections.handle(
+    new winston.transports.File({
+      filename: path.join(logDir, "rejections.log"),
+    })
+  );
+} else {
+  // ✅ In production, only log to console
+  logger.exceptions.handle(new winston.transports.Console());
+  logger.rejections.handle(new winston.transports.Console());
+}
 
 export default logger;
