@@ -13,7 +13,7 @@ const startServer = () => {
   });
   httpServer.on("error", (error) => {
     logger.error("Server failed to start: ", error);
-    process.exit(1);
+    // process.exit(1);
   });
 };
 
@@ -22,5 +22,5 @@ try {
   startServer();
 } catch (error) {
   logger.error("MongoDB connection error: ", error);
-  process.exit(1);
+  // process.exit(1);
 }
