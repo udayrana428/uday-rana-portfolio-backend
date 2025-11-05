@@ -46,3 +46,5 @@ app.use("/api/v1/projects", projectRouter);
 app.use(errorHandler);
 
 export { httpServer };
+// ✅ For Vercel / Serverless
+export default (req, res) => app(req, res);
