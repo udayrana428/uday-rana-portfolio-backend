@@ -1,5 +1,5 @@
 import { AvailableUserRoles } from "../constants.js";
-import { User } from "../models/apps/auth/user.models.js";
+import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import jwt from "jsonwebtoken";
@@ -62,7 +62,7 @@ export const getLoggedInUserOrIgnore = asyncHandler(async (req, res, next) => {
  * * This middleware is responsible for validating multiple user role permissions at a time.
  * * So, in future if we have a route which can be accessible by multiple roles, we can achieve that with this middleware
  */
-export const verifyPermission = (roles = []) =>
+export const verifyRoles = (roles = []) =>
   asyncHandler(async (req, res, next) => {
     if (!req.user?._id) {
       throw new ApiError(401, "Unauthorized request");

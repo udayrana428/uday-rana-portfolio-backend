@@ -38,10 +38,13 @@ app.use("/api/v1/healthcheck", healthcheckRouter);
 
 // App Routes
 import projectRouter from "./routes/project.routes.js";
+import userRouter from "./routes/user.routes.js";
 import morganMiddleware from "./logger/morgan.logger.js";
 import connectDB from "./db/index.js";
 
 app.use("/api/v1/projects", projectRouter);
+
+app.use("/api/v1/users", userRouter);
 
 // common error handling middleware
 app.use(errorHandler);
