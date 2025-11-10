@@ -38,4 +38,16 @@ const loginUserValidator = () => {
   ];
 };
 
-export { registerUserValidator, loginUserValidator };
+const sendContactEmailValidator = () => {
+  return [
+    body("name").notEmpty().withMessage("Name is required"),
+    body("email")
+      .notEmpty()
+      .withMessage("Email is required")
+      .isEmail()
+      .withMessage("Invalid email"),
+    body("message").notEmpty().withMessage("Message is required"),
+  ];
+};
+
+export { registerUserValidator, loginUserValidator, sendContactEmailValidator };

@@ -44,6 +44,7 @@ const createProject = asyncHandler(async (req, res) => {
       url: mainImageUrl,
       localPath: mainImageLocalPath,
     },
+    subImages,
     ...rest,
   });
 
@@ -148,7 +149,43 @@ const getAllProjects = asyncHandler(async (req, res) => {
     filters.category = category;
   }
 
-  const projectAggregate = Project.aggregate([{ $match: filters }]);
+  const projectAggregate = Project.aggregate([
+    { $match: filters },
+    { $sort: { createdAt: -1 } },
+  ]);
+
+  const projects = await Project.aggregatePaginate(
+    projectAggregate,
+    getMongoosePaginationOptions({
+      page,
+      limit,
+      customLabels: {
+        totalDocs: "totalProjects",
+        docs: "projects",
+        limit: "pageSize",
+        page: "currentPage",
+      },
+    })
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, projects, "Projects fetched successfully"));
+});
+
+const getAllProjectsAdmin = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, category } = req.query;
+
+  const filters = {};
+
+  if (category) {
+    filters.category = category;
+  }
+
+  const projectAggregate = Project.aggregate([
+    { $match: filters },
+    { $sort: { createdAt: -1 } },
+  ]);
 
   const projects = await Project.aggregatePaginate(
     projectAggregate,
@@ -188,6 +225,7 @@ const getFeaturedProjects = asyncHandler(async (req, res) => {
 
   const projectAggregate = Project.aggregate([
     { $match: { isFeatured: true } },
+    { $sort: { updatedAt: -1 } },
   ]);
 
   const projects = await Project.aggregatePaginate(
@@ -218,4 +256,5 @@ export {
   getAllProjects,
   getProjectById,
   getFeaturedProjects,
+  getAllProjectsAdmin,
 };

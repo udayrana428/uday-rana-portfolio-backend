@@ -3,6 +3,11 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import jwt from "jsonwebtoken";
+import {
+  sendContactEmailToAdminMailgenContent,
+  sendContactEmailToUserMailgenContent,
+  sendEmail,
+} from "../utils/mail.js";
 
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
@@ -113,7 +118,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken =
-    req.cookies.refreshToken || req.body.refreshToken;
+    req.cookies?.refreshToken || req.body?.refreshToken;
 
   if (!incomingRefreshToken) {
     throw new ApiError(401, "Unauthorized request");
@@ -165,10 +170,38 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
+const sendContactEmail = asyncHandler(async (req, res) => {
+  const { name, email, message } = req.body;
+
+  await sendEmail({
+    email: process.env.GMAIL_USER,
+    subject: `New Contact Message from ${name}`,
+    mailgenContent: sendContactEmailToAdminMailgenContent({
+      name,
+      email,
+      message,
+    }),
+  });
+  await sendEmail({
+    email: email,
+    subject: "Thank you for contacting me",
+    mailgenContent: sendContactEmailToUserMailgenContent({
+      name,
+      email,
+      message,
+    }),
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Mail sent successfully"));
+});
+
 export {
   registerUser,
   loginUser,
   logoutUser,
   getCurrentUser,
   refreshAccessToken,
+  sendContactEmail,
 };

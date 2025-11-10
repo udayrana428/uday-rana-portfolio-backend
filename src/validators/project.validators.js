@@ -16,7 +16,7 @@ const createProjectValidator = () => {
       .withMessage("Invalid category type"),
     body("techStack")
       .optional()
-      .isArray()
+      .isArray({ type: "string" })
       .withMessage("Techstack must be an array of string"),
     body("githubUrl")
       .optional()
@@ -38,6 +38,10 @@ const createProjectValidator = () => {
       .optional()
       .isBoolean()
       .withMessage("isFeatured must be boolean"),
+    body("tags")
+      .optional()
+      .isArray({ type: "string" })
+      .withMessage("Tags must be an array of string"),
   ];
 };
 

@@ -10,12 +10,14 @@ import {
   createProject,
   deleteProject,
   getAllProjects,
+  getAllProjectsAdmin,
   getFeaturedProjects,
   getProjectById,
   updateProject,
 } from "../controllers/project.controllers.js";
 import { mongoIdPathVariableValidator } from "../validators/mongodb.validators.js";
 import { verifyJWT, verifyRoles } from "../middlewares/auth.middleware.js";
+import { parseFormData } from "../middlewares/parse.middleware.js";
 
 const router = Router();
 
@@ -29,6 +31,13 @@ router
 router.route("/getFeaturedProjects").get(getFeaturedProjects);
 
 // secured routes
+
+// Admin
+router
+  .route("/getAllProjectsAdmin")
+  .get(verifyJWT, verifyRoles(UserRolesEnum.ADMIN), getAllProjectsAdmin);
+
+// User
 router.route("/createProject").post(
   verifyJWT,
   verifyRoles(UserRolesEnum.ADMIN),
@@ -42,6 +51,7 @@ router.route("/createProject").post(
       maxCount: projectImageMaxCount,
     },
   ]),
+  parseFormData,
   createProjectValidator(),
   validate,
   createProject
@@ -60,6 +70,7 @@ router.route("/updateProject/:projectId").patch(
       maxCount: projectImageMaxCount,
     },
   ]),
+  parseFormData,
   updateProjectValidator(),
   validate,
   updateProject
