@@ -7,6 +7,12 @@ export const parseFormData = (req, res, next) => {
     if (req.body.tags && typeof req.body.tags === "string") {
       req.body.tags = JSON.parse(req.body.tags);
     }
+    if (
+      req.body.removedSubImages &&
+      typeof req.body.removedSubImages === "string"
+    ) {
+      req.body.removedSubImages = JSON.parse(req.body.removedSubImages);
+    }
     if (req.body.isFeatured && typeof req.body.isFeatured === "string") {
       req.body.isFeatured = req.body.isFeatured === "true";
     }

@@ -27,6 +27,7 @@ const projectSchema = new mongoose.Schema(
       required: true,
       type: {
         url: String,
+        publicId: String,
         localPath: String,
       },
     },
@@ -34,6 +35,7 @@ const projectSchema = new mongoose.Schema(
       type: [
         {
           url: String,
+          publicId: String,
           localPath: String,
         },
       ],

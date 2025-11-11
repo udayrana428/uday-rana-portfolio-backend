@@ -30,9 +30,16 @@ const storage = multer.diskStorage({
 });
 
 // Middleware responsible to read form data and upload the File object to the mentioned path
+// Local disk storage → ❌
+// export const upload = multer({
+//   storage,
+//   limits: {
+//     fileSize: 1 * 1000 * 1000,
+//   },
+// });
+
+// Memory storage → ✅ (works on Vercel)
 export const upload = multer({
-  storage,
-  limits: {
-    fileSize: 1 * 1000 * 1000,
-  },
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1000 * 1000 }, // 2MB
 });

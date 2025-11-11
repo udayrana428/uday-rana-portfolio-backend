@@ -1,6 +1,7 @@
 import fs from "fs";
 import logger from "../logger/winston.logger.js";
 import slugify from "slugify";
+import { Readable } from "stream";
 
 export const getStaticFilePath = (req, fileName) => {
   return `${req.protocol}://${req.get("host")}/images/${fileName}`;
@@ -39,4 +40,11 @@ export const getMongoosePaginationOptions = ({
       ...customLabels,
     },
   };
+};
+
+export const bufferToStream = (buffer) => {
+  const readable = new Readable();
+  readable.push(buffer);
+  readable.push(null); // end of stream
+  return readable;
 };
